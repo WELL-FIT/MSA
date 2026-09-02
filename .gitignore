@@ -1,0 +1,29 @@
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Java / Gradle
+**/.gradle/
+**/build/
+**/bin/
+**/out/
+*.class
+
+# Frontend
+vue-frontend/node_modules/
+vue-frontend/dist/
+
+# Environment and secrets
+.env
+.env.*
+**/application-local.yml
+**/application-dev.yml
+
+# Large Docker image archives
+*.tar
+*.tar.gz
+*.part.*
