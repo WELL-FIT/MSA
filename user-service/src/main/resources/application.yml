@@ -1,0 +1,49 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-service
+
+  datasource:
+    url: jdbc:mariadb://lecturedb:3306/lecture_db 
+    # 컨테이너 이름 lecturedb 로 입력 (원래 IP를 입력하지만, 재부팅 시 변경될 수 있는 가능성 제거)
+    username: manager
+    password: SqlDba-1
+    driver-class-name: org.mariadb.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MariaDBDialect
+
+  # Resource Server - Auth Server JWK로 토큰 검증
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:9000/oauth2/jwks
+          issuer-uri: http://localhost:9000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    root: INFO
+    com.lecture.user: DEBUG
+    org.springframework.web: DEBUG

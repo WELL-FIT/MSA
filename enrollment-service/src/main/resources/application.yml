@@ -1,0 +1,91 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: enrollment-service
+
+  datasource:
+    url: jdbc:mariadb://lecturedb:3306/lecture_db
+    # 컨테이너 이름 lecturedb 로 입력 (원래 IP를 입력하지만, 재부팅 시 변경될 수 있는 가능성 제거)
+    username: manager
+    password: SqlDba-1
+    driver-class-name: org.mariadb.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MariaDBDialect
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://auth-server:9000/oauth2/jwks
+          issuer-uri: http://auth-server:9000
+
+  # Kafka 설정
+  kafka:
+    bootstrap-servers: kafka:9092
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+    consumer:
+      group-id: enrollment-service
+      auto-offset-reset: earliest
+
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+
+      properties:
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "*"
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: java.util.HashMap
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+# 서비스 간 통신 URL (Eureka lb:// 사용 대신 컨테이너 DNS 직접 호출)
+service:
+  course-service:
+    url: http://course-service:8082
+  payment-service:
+    url: http://payment-service:8084
+
+# Kafka 토픽명
+kafka:
+  topic:
+    payment-completed: payment.completed
+    enrollment-completed: enrollment.completed
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+  health:
+    diskspace:
+      enabled: false
