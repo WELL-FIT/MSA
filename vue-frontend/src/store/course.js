@@ -9,15 +9,18 @@ export const useCourseStore = defineStore('course', () => {
   const error = ref(null)
   const selectedCategory = ref('전체')
 
-  const categories = ['전체', '백엔드', '프론트엔드', 'DevOps', '데이터', 'AI']
+  const categories = ['전체', '건강·의료', '자기계발', '여가·휴식', '심리·마음건강', '가족·생활', '재정·상담', '문화', '기타']
 
-  // 백엔드 카테고리 → 프론트 표시용 카테고리
+  // DB category enum → 프론트 표시용 복지 카테고리
   const categoryLabelMap = {
-    BACKEND: '백엔드',
-    FRONTEND: '프론트엔드',
-    DEVOPS: 'DevOps',
-    DATA: '데이터',
-    AI: 'AI'
+    HEALTH: '건강·의료',
+    SELF_DEVELOPMENT: '자기계발',
+    LEISURE: '여가·휴식',
+    PSYCHOLOGICAL: '심리·마음건강',
+    FAMILY: '가족·생활',
+    FINANCIAL: '재정·상담',
+    CULTURE: '문화',
+    OTHER: '기타'
   }
 
   // 썸네일 이미지 매핑
@@ -31,11 +34,14 @@ export const useCourseStore = defineStore('course', () => {
   }
 
   const categoryThumbnailMap = {
-    '백엔드': thumbnailMap.SPRING,
-    '프론트엔드': thumbnailMap.VUE,
-    'DevOps': thumbnailMap.KUBERNETES,
-    '데이터': thumbnailMap.PYTHON,
-    'AI': thumbnailMap.AI
+    '건강·의료': thumbnailMap.SPRING,
+    '자기계발': thumbnailMap.PYTHON,
+    '여가·휴식': thumbnailMap.VUE,
+    '심리·마음건강': thumbnailMap.AI,
+    '가족·생활': thumbnailMap.VUE,
+    '재정·상담': thumbnailMap.PYTHON,
+    '문화': thumbnailMap.VUE,
+    '기타': thumbnailMap.DOCKER
   }
 
   function normalizeCategory(category) {

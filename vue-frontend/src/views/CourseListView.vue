@@ -126,7 +126,7 @@ const auth = useAuthStore()
 const { categories, loading } = courseStore
 
 const selectedCategory = computed(() => courseStore.selectedCategory)
-const isInstructor = computed(() => auth.user?.role === 'INSTRUCTOR')
+const isInstructor = computed(() => auth.user?.role === 'ADMIN')
 
 const filteredCourses = computed(() => {
   if (!Array.isArray(courseStore.courses)) return []

@@ -155,10 +155,14 @@ const submitError = ref('')
 const submitSuccess = ref('')
 
 const categoryOptions = [
-  { label: '백엔드', value: 'BACKEND' },
-  { label: '프론트엔드', value: 'FRONTEND' },
-  { label: 'DevOps', value: 'DEVOPS' },
-  { label: 'AI / 데이터', value: 'DATA_SCIENCE' }
+  { label: '건강·의료', value: 'HEALTH' },
+  { label: '자기계발', value: 'SELF_DEVELOPMENT' },
+  { label: '여가·휴식', value: 'LEISURE' },
+  { label: '심리·마음건강', value: 'PSYCHOLOGICAL' },
+  { label: '가족·생활', value: 'FAMILY' },
+  { label: '재정·상담', value: 'FINANCIAL' },
+  { label: '문화', value: 'CULTURE' },
+  { label: '기타', value: 'OTHER' }
 ]
 
 function handleLogout() {
@@ -169,7 +173,7 @@ function handleLogout() {
 function validateForm() {
   validationError.value = ''
 
-  if (!auth.user || auth.user.role !== 'INSTRUCTOR') {
+  if (!auth.user || auth.user.role !== 'ADMIN') {
     validationError.value = '강사 계정만 강의를 등록할 수 있습니다.'
     return false
   }

@@ -176,7 +176,7 @@ import { courseApi } from '@/api/course.js'
 const router = useRouter()
 const auth = useAuthStore()
 
-const isInstructor = computed(() => auth.user?.role === 'INSTRUCTOR')
+const isInstructor = computed(() => auth.user?.role === 'ADMIN')
 
 /* 학생용 */
 const recommendations = ref([])

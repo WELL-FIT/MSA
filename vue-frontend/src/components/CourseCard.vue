@@ -29,11 +29,14 @@ const props = defineProps({
 })
 
 const categoryConfig = {
-  '백엔드':    { bg: 'thumb-teal',   badge: 'badge-teal',   thumb: 'spring_boot' },
-  '프론트엔드':{ bg: 'thumb-teal',   badge: 'badge-teal',   thumb: 'vue_js' },
-  'DevOps':   { bg: 'thumb-blue',   badge: 'badge-blue',   thumb: 'docker' },
-  '데이터':   { bg: 'thumb-purple', badge: 'badge-purple', thumb: 'python' },
-  'AI':       { bg: 'thumb-pink',   badge: 'badge-pink',   thumb: 'generative_ai' },
+  '건강·의료': { bg: 'thumb-teal', badge: 'badge-teal', thumb: 'spring_boot' },
+  '자기계발': { bg: 'thumb-purple', badge: 'badge-purple', thumb: 'python' },
+  '여가·휴식': { bg: 'thumb-blue', badge: 'badge-blue', thumb: 'vue_js' },
+  '심리·마음건강': { bg: 'thumb-pink', badge: 'badge-pink', thumb: 'generative_ai' },
+  '가족·생활': { bg: 'thumb-amber', badge: 'badge-amber', thumb: 'vue_js' },
+  '재정·상담': { bg: 'thumb-purple', badge: 'badge-purple', thumb: 'python' },
+  '문화': { bg: 'thumb-blue', badge: 'badge-blue', thumb: 'vue_js' },
+  '기타': { bg: 'thumb-gray', badge: 'badge-gray', thumb: 'docker' },
 }
 
 const config = computed(() => categoryConfig[props.course.category] || { bg: 'thumb-gray', badge: 'badge-gray' })

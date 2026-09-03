@@ -84,14 +84,17 @@ const enrollmentStatus = ref('NONE') // NONE | PENDING | ACTIVE
 
 const course = computed(() => courseStore.selectedCourse)
 const loading = computed(() => courseStore.loading)
-const isInstructor = computed(() => auth.user?.role === 'INSTRUCTOR')
+const isInstructor = computed(() => auth.user?.role === 'ADMIN')
 
 const categoryConfig = {
-  '백엔드': { badge: 'badge-teal', bg: 'thumb-teal', thumb: 'spring_boot' },
-  '프론트엔드': { badge: 'badge-teal', bg: 'thumb-teal', thumb: 'vue_js' },
-  'DevOps': { badge: 'badge-blue', bg: 'thumb-blue', thumb: 'kubernetes' },
-  '데이터': { badge: 'badge-purple', bg: 'thumb-purple', thumb: 'python' },
-  'AI': { badge: 'badge-pink', bg: 'thumb-pink', thumb: 'generative_ai' },
+  '건강·의료': { badge: 'badge-teal', bg: 'thumb-teal', thumb: 'spring_boot' },
+  '자기계발': { badge: 'badge-purple', bg: 'thumb-purple', thumb: 'python' },
+  '여가·휴식': { badge: 'badge-blue', bg: 'thumb-blue', thumb: 'vue_js' },
+  '심리·마음건강': { badge: 'badge-pink', bg: 'thumb-pink', thumb: 'generative_ai' },
+  '가족·생활': { badge: 'badge-amber', bg: 'thumb-amber', thumb: 'vue_js' },
+  '재정·상담': { badge: 'badge-purple', bg: 'thumb-purple', thumb: 'python' },
+  '문화': { badge: 'badge-blue', bg: 'thumb-blue', thumb: 'vue_js' },
+  '기타': { badge: 'badge-gray', bg: 'thumb-gray', thumb: 'docker' },
 }
 
 const config = computed(() => categoryConfig[course.value?.category] || {})
