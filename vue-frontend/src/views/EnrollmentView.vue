@@ -7,7 +7,7 @@
           <div class="sidebar-label">메뉴</div>
 
           <router-link to="/courses" class="sidebar-item">
-            <span class="si-icon">📚</span> 강의 목록
+            <span class="si-icon">📚</span> 복지 프로그램
           </router-link>
 
           <router-link
@@ -15,7 +15,7 @@
             to="/enrollments"
             class="sidebar-item active"
           >
-            <span class="si-icon">✅</span> 내 수강 목록
+            <span class="si-icon">✅</span> 내 복지
           </router-link>
 
           <router-link to="/mypage" class="sidebar-item">
@@ -35,7 +35,7 @@
       </aside>
 
       <main class="main-content">
-        <h1 class="page-title">내 수강 목록</h1>
+        <h1 class="page-title">내 복지</h1>
 
         <div v-if="loading" class="loading-center">
           <div class="spinner"></div>
@@ -49,10 +49,9 @@
 
             <div class="enroll-info">
               <span class="badge" :class="getBadge(item.course?.category)">
-                {{ item.course?.category }}
+                {{ item.course?.category || '-' }}
               </span>
-              <h3 class="enroll-title">{{ item.course?.title }}</h3>
-              <p class="enroll-instructor">강사: {{ item.course?.instructorName }}</p>
+              <h3 class="enroll-title">{{ item.course?.title || `복지 프로그램 #${item.courseId}` }}</h3>
             </div>
 
             <div class="enroll-status">
@@ -62,10 +61,10 @@
                   item.status === 'ACTIVE' ? 'status-active' : 'status-pending'
                 ]"
               >
-                {{ item.status === 'ACTIVE' ? '수강 중' : '대기 중' }}
+                {{ displayStatus(item.status) }}
               </span>
               <router-link :to="`/courses/${item.courseId}`" class="btn btn-ghost btn-sm">
-                강의 보기
+                상세 보기
               </router-link>
             </div>
           </div>
@@ -73,9 +72,9 @@
 
         <div v-else class="empty-state">
           <p class="empty-icon">📭</p>
-          <p>수강 중인 강의가 없습니다.</p>
+          <p>신청한 복지 프로그램이 없습니다.</p>
           <router-link to="/courses" class="btn btn-primary" style="margin-top:16px;">
-            강의 둘러보기
+            복지 프로그램 둘러보기
           </router-link>
         </div>
       </main>
@@ -89,9 +88,11 @@ import { useRouter } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
 import { enrollmentApi } from '@/api/enrollment.js'
 import { useAuthStore } from '@/store/auth.js'
+import { useCourseStore } from '@/store/course.js'
 
 const router = useRouter()
 const auth = useAuthStore()
+const courseStore = useCourseStore()
 
 const enrollments = ref([])
 const loading = ref(true)
@@ -110,20 +111,48 @@ const categoryConfig = {
 }
 
 function getThumbBg(cat) {
-  return categoryConfig[cat]?.bg || 'thumb-gray'
+  return categoryConfig[courseStore.normalizeCategory(cat)]?.bg || 'thumb-gray'
 }
 
 function getBadge(cat) {
-  return categoryConfig[cat]?.badge || 'badge-gray'
+  return categoryConfig[courseStore.normalizeCategory(cat)]?.badge || 'badge-gray'
 }
 
 function getThumbSrc(course) {
-  const key = course?.thumbnail || categoryConfig[course?.category]?.thumb
+  const category = courseStore.normalizeCategory(course?.category)
+  const key = course?.thumbnail || categoryConfig[category]?.thumb
   if (!key) return ''
   try {
     return new URL(`../assets/images/courses/${key}.png`, import.meta.url).href
   } catch {
     return ''
+  }
+}
+
+function displayProvider(course) {
+  return (
+    course?.instructorName ||
+    course?.teacherName ||
+    course?.instructor_name ||
+    (course?.instructorId ? `공급업체 #${course.instructorId}` : '공급업체 정보 없음')
+  )
+}
+
+function displayStatus(status) {
+  if (status === 'ACTIVE') return '이용 중'
+  if (status === 'PENDING') return '신청 대기'
+  if (status === 'CANCELLED') return '취소됨'
+  return status || '-'
+}
+
+function normalizeEnrollment(item) {
+  if (!item || typeof item !== 'object') return item
+
+  return {
+    ...item,
+    course: item.course
+      ? courseStore.normalizeCourse(item.course)
+      : null
   }
 }
 
@@ -133,7 +162,7 @@ function handleLogout() {
 }
 
 onMounted(async () => {
-  // 강사는 이 페이지 접근 불가 → 마이페이지로 이동
+  // 공급업체 계정은 내 복지 화면 대신 마이페이지로 이동
   if (isInstructor.value) {
     console.warn('[EnrollmentView] instructor tried to access /enrollments, redirect to /mypage')
     router.replace('/mypage')
@@ -144,13 +173,10 @@ onMounted(async () => {
     const res = await enrollmentApi.getMyEnrollments()
     console.log('[EnrollmentView] my enrollments response:', res.data)
 
-    if (Array.isArray(res.data?.data)) {
-      enrollments.value = res.data.data
-    } else if (Array.isArray(res.data)) {
-      enrollments.value = res.data
-    } else {
-      enrollments.value = []
-    }
+    const payload = res.data?.data ?? res.data
+    enrollments.value = Array.isArray(payload)
+      ? payload.map(normalizeEnrollment)
+      : []
   } catch (error) {
     console.error('[EnrollmentView] failed to load enrollments:', error)
     enrollments.value = []
@@ -279,25 +305,12 @@ onMounted(async () => {
   padding: 8px;
 }
 
-.thumb-teal {
-  background: #E1F5EE;
-}
-
-.thumb-blue {
-  background: #E6F1FB;
-}
-
-.thumb-purple {
-  background: #EEEDFE;
-}
-
-.thumb-pink {
-  background: #FBEAF0;
-}
-
-.thumb-gray {
-  background: #F1EFE8;
-}
+.thumb-teal { background: var(--color-success-light); }
+.thumb-blue { background: var(--color-primary-light); }
+.thumb-amber { background: var(--color-warning-light); }
+.thumb-purple { background: var(--color-bg-tertiary); }
+.thumb-pink { background: var(--color-bg-tertiary); }
+.thumb-gray { background: var(--color-bg-tertiary); }
 
 .enroll-info {
   flex: 1;
@@ -331,13 +344,13 @@ onMounted(async () => {
 }
 
 .status-active {
-  background: #E1F5EE;
-  color: #0F6E56;
+  background: var(--color-success-light);
+  color: var(--color-success);
 }
 
 .status-pending {
-  background: #FAEEDA;
-  color: #854F0B;
+  background: var(--color-warning-light);
+  color: var(--color-warning);
 }
 
 .btn-sm {

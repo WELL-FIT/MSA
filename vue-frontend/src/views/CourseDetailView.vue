@@ -10,16 +10,16 @@
             <span class="badge" :class="badgeClass">{{ displayCategory }}</span>
             <h1 class="detail-title">{{ course.title }}</h1>
             <p class="detail-desc">
-              {{ course.description || '실무 전문가가 직접 설계한 커리큘럼으로 체계적으로 학습하세요.' }}
+              {{ course.description || '임직원 복지 이용을 위해 준비된 프로그램입니다.' }}
             </p>
 
             <div class="detail-meta">
-              <span>강사: {{ displayInstructorName }}</span>
-              <span>수강생: {{ displayEnrollmentCount }}명</span>
+              <span>복지 공급업체: {{ displayInstructorName }}</span>
+              <span>누적 이용 건수: {{ displayEnrollmentCount }}건</span>
             </div>
           </div>
 
-          <!-- 우측 결제/수강 카드 -->
+          <!-- 우측 신청 카드 -->
           <div class="enroll-card fade-in">
             <div class="enroll-thumb" :class="thumbBg">
               <img v-if="thumbSrc" :src="thumbSrc" :alt="course.title" />
@@ -45,9 +45,9 @@
               </p>
 
               <ul class="enroll-info-list">
-                <li>✅ 즉시 수강 가능</li>
-                <li>✅ 평생 소장</li>
-                <li>✅ 수료증 발급</li>
+                <li>✅ 임직원 복지 신청 가능</li>
+                <li>✅ 신청 후 처리 상태 확인</li>
+                <li>✅ 내 복지 목록 자동 반영</li>
               </ul>
             </div>
           </div>
@@ -60,7 +60,7 @@
     </div>
 
     <div v-else class="loading-center">
-      <p class="empty-text">강의 정보를 불러오지 못했습니다.</p>
+      <p class="empty-text">복지 프로그램 정보를 불러오지 못했습니다.</p>
     </div>
   </div>
 </template>
@@ -72,18 +72,19 @@ import AppHeader from '@/components/AppHeader.vue'
 import { useCourseStore } from '@/store/course.js'
 import { enrollmentApi } from '@/api/enrollment.js'
 import { useAuthStore } from '@/store/auth.js'
+import { storeToRefs } from 'pinia'
 
 const route = useRoute()
 const router = useRouter()
 const courseStore = useCourseStore()
 const auth = useAuthStore()
+const { selectedCourse, loading } = storeToRefs(courseStore)
 
 const enrolling = ref(false)
 const enrollError = ref('')
 const enrollmentStatus = ref('NONE') // NONE | PENDING | ACTIVE
 
-const course = computed(() => courseStore.selectedCourse)
-const loading = computed(() => courseStore.loading)
+const course = computed(() => selectedCourse.value)
 const isInstructor = computed(() => auth.user?.role === 'INSTRUCTOR')
 
 const categoryConfig = {
@@ -110,7 +111,7 @@ const displayInstructorName = computed(() => {
     course.value?.instructor?.name ||
     course.value?.instructor_name ||
     course.value?.ownerName ||
-    '강사 정보 없음'
+    (course.value?.instructorId ? `공급업체 #${course.value.instructorId}` : '공급업체 정보 없음')
   )
 })
 
@@ -140,10 +141,10 @@ const thumbSrc = computed(() => {
 })
 
 const buttonLabel = computed(() => {
-  if (isInstructor.value) return '강사 계정은 신청 불가'
-  if (enrollmentStatus.value === 'ACTIVE') return '내 수강 목록으로 이동'
-  if (enrollmentStatus.value === 'PENDING') return '신청 완료 · 결제 처리 중'
-  return '결제하고 수강하기'
+  if (isInstructor.value) return '공급업체 계정은 신청 불가'
+  if (enrollmentStatus.value === 'ACTIVE') return '내 복지 목록으로 이동'
+  if (enrollmentStatus.value === 'PENDING') return '신청 완료 · 처리 중'
+  return '복지 신청하기'
 })
 
 const buttonDisabled = computed(() => {
@@ -155,18 +156,18 @@ const buttonDisabled = computed(() => {
 
 const helperText = computed(() => {
   if (isInstructor.value) {
-    return '강사 계정은 본인 강의를 수강 신청할 수 없습니다.'
+    return '공급업체 계정은 복지 프로그램을 신청할 수 없습니다.'
   }
 
   if (enrollmentStatus.value === 'ACTIVE') {
-    return '이미 수강 중인 강의입니다. 내 수강 목록에서 바로 이어서 학습할 수 있습니다.'
+    return '이미 이용 중인 복지 프로그램입니다. 내 복지 목록에서 확인할 수 있습니다.'
   }
 
   if (enrollmentStatus.value === 'PENDING') {
-    return '수강 신청이 접수되었습니다. 결제/처리 상태가 반영되면 내 수강 목록에서 확인할 수 있습니다.'
+    return '복지 신청이 접수되었습니다. 처리 상태는 내 복지 목록에서 확인할 수 있습니다.'
   }
 
-  return '결제를 진행하면 수강 신청이 함께 처리됩니다.'
+  return '신청하면 내 복지 목록에 대기 상태로 반영됩니다.'
 })
 
 async function loadEnrollmentStatus() {
@@ -203,12 +204,12 @@ async function handlePrimaryAction() {
   enrollError.value = ''
 
   if (!course.value?.id) {
-    enrollError.value = '강의 정보가 올바르지 않습니다.'
+    enrollError.value = '복지 프로그램 정보가 올바르지 않습니다.'
     return
   }
 
   if (isInstructor.value) {
-    enrollError.value = '강사 계정은 본인 강의를 수강 신청할 수 없습니다.'
+    enrollError.value = '공급업체 계정은 복지 프로그램을 신청할 수 없습니다.'
     return
   }
 
@@ -226,9 +227,10 @@ async function handlePrimaryAction() {
   try {
     await enrollmentApi.enroll(course.value.id)
     enrollmentStatus.value = 'PENDING'
+    router.push('/enrollments')
   } catch (e) {
     console.error('[CourseDetail] enroll failed:', e)
-    enrollError.value = e.response?.data?.message || '결제/수강 신청에 실패했습니다.'
+    enrollError.value = e.response?.data?.message || '복지 신청에 실패했습니다.'
   } finally {
     enrolling.value = false
   }
@@ -236,12 +238,12 @@ async function handlePrimaryAction() {
 
 onMounted(async () => {
   await courseStore.fetchCourse(route.params.id)
-  console.log('[CourseDetail] selectedCourse =', courseStore.selectedCourse)
+  console.log('[CourseDetail] selectedCourse =', selectedCourse.value)
   await loadEnrollmentStatus()
 })
 
 watch(
-  () => courseStore.selectedCourse,
+  () => selectedCourse.value,
   async (value) => {
     console.log('[CourseDetail] selectedCourse changed =', value)
     if (value?.id) {
@@ -259,7 +261,7 @@ watch(
 }
 
 .detail-hero {
-  background: linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 100%);
+  background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-primary-light) 100%);
   border-bottom: 1px solid var(--color-border);
   padding: 48px 0;
 }
@@ -322,11 +324,12 @@ watch(
   padding: 20px;
 }
 
-.thumb-teal { background: #E1F5EE; }
-.thumb-blue { background: #E6F1FB; }
-.thumb-purple { background: #EEEDFE; }
-.thumb-pink { background: #FBEAF0; }
-.thumb-gray { background: #F1EFE8; }
+.thumb-teal { background: var(--color-success-light); }
+.thumb-blue { background: var(--color-primary-light); }
+.thumb-amber { background: var(--color-warning-light); }
+.thumb-purple { background: var(--color-bg-tertiary); }
+.thumb-pink { background: var(--color-bg-tertiary); }
+.thumb-gray { background: var(--color-bg-tertiary); }
 
 .enroll-body {
   padding: 20px;
@@ -367,9 +370,10 @@ watch(
 
 .error-msg {
   font-size: 13px;
-  color: #dc2626;
+  color: var(--color-danger);
   padding: 8px 12px;
-  background: #fef2f2;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
 }
 
@@ -400,8 +404,8 @@ watch(
 }
 
 .badge-gray {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
 }
 
 @keyframes spin {
