@@ -25,7 +25,7 @@ public class UserService {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다: " + request.getEmail());
         }
 
-        User.Role role = request.getRole() != null ? request.getRole() : User.Role.STUDENT;
+        User.Role role = request.getRole() != null ? request.getRole() : User.Role.USER;
 
         User user = User.builder()
                 .email(request.getEmail())
