@@ -11,11 +11,11 @@
       <span class="badge" :class="badgeClass">{{ course.category }}</span>
       <h3 class="card-title">{{ course.title }}</h3>
       <div class="card-meta">
-        <span class="instructor">{{ course.instructorName }}</span>
+        <span class="instructor">{{ providerName }}</span>
         <span class="price">₩{{ Number(course.price).toLocaleString() }}</span>
       </div>
       <div class="card-footer">
-        <span class="enrolled">수강생 {{ course.enrollmentCount?.toLocaleString() }}명</span>
+        <span class="enrolled">누적 이용 {{ displayEnrollmentCount }}건</span>
       </div>
     </div>
   </router-link>
@@ -42,6 +42,16 @@ const categoryConfig = {
 const config = computed(() => categoryConfig[props.course.category] || { bg: 'thumb-gray', badge: 'badge-gray' })
 const thumbBg = computed(() => config.value.bg)
 const badgeClass = computed(() => config.value.badge)
+const providerName = computed(() => (
+  props.course.instructorName ||
+  props.course.teacherName ||
+  props.course.instructor_name ||
+  (props.course.instructorId ? `공급업체 #${props.course.instructorId}` : '공급업체 정보 없음')
+))
+const displayEnrollmentCount = computed(() => {
+  const value = Number(props.course.enrollmentCount ?? props.course.enrollment_count ?? 0)
+  return Number.isNaN(value) ? '0' : value.toLocaleString()
+})
 
 // 썸네일 이미지 동적 import
 const thumbSrc = computed(() => {
@@ -78,12 +88,12 @@ const thumbSrc = computed(() => {
   justify-content: center;
   overflow: hidden;
 }
-.thumb-teal   { background: #E1F5EE; }
-.thumb-blue   { background: #E6F1FB; }
-.thumb-amber  { background: #FAEEDA; }
-.thumb-purple { background: #EEEDFE; }
-.thumb-pink   { background: #FBEAF0; }
-.thumb-gray   { background: #F1EFE8; }
+.thumb-teal   { background: var(--color-success-light); }
+.thumb-blue   { background: var(--color-primary-light); }
+.thumb-amber  { background: var(--color-warning-light); }
+.thumb-purple { background: var(--color-bg-tertiary); }
+.thumb-pink   { background: var(--color-bg-tertiary); }
+.thumb-gray   { background: var(--color-bg-tertiary); }
 .thumb-img {
   width: 100%;
   height: 100%;

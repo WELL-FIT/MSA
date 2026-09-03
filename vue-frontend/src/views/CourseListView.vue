@@ -12,7 +12,7 @@
             class="sidebar-item"
             :class="{ active: $route.path === '/courses' }"
           >
-            <span class="si-icon">📚</span> 강의 목록
+            <span class="si-icon">📚</span> 복지 프로그램
           </router-link>
 
           <router-link
@@ -20,7 +20,7 @@
             to="/enrollments"
             class="sidebar-item"
           >
-            <span class="si-icon">✅</span> 내 수강 목록
+            <span class="si-icon">✅</span> 내 복지
           </router-link>
 
           <router-link
@@ -46,9 +46,9 @@
       <main class="main-content">
         <div class="content-header">
           <div>
-            <h1 class="page-title">강의 목록</h1>
+            <h1 class="page-title">복지 프로그램</h1>
             <p class="page-subtitle" v-if="isInstructor">
-              강사 계정으로 등록된 강의를 확인하고 새 강의를 추가할 수 있습니다.
+              복지 공급업체 계정으로 등록된 프로그램을 확인하고 새 프로그램을 추가할 수 있습니다.
             </p>
           </div>
 
@@ -57,7 +57,7 @@
             to="/courses/new"
             class="btn btn-primary create-course-btn"
           >
-            강의 등록
+            프로그램 등록
           </router-link>
         </div>
 
@@ -85,7 +85,7 @@
           </div>
         </div>
 
-        <!-- 강의 그리드 -->
+        <!-- 프로그램 그리드 -->
         <div v-else-if="filteredCourses.length" class="course-grid fade-in">
           <CourseCard
             v-for="course in filteredCourses"
@@ -96,14 +96,14 @@
 
         <!-- 빈 상태 -->
         <div v-else class="empty-state">
-          <p>해당 카테고리의 강의가 없습니다.</p>
+          <p>해당 카테고리의 복지 프로그램이 없습니다.</p>
 
           <router-link
             v-if="isInstructor"
             to="/courses/new"
             class="btn btn-primary empty-action-btn"
           >
-            첫 강의 등록하기
+            첫 프로그램 등록하기
           </router-link>
         </div>
       </main>
@@ -118,20 +118,24 @@ import AppHeader from '@/components/AppHeader.vue'
 import CourseCard from '@/components/CourseCard.vue'
 import { useCourseStore } from '@/store/course.js'
 import { useAuthStore } from '@/store/auth.js'
+import { storeToRefs } from 'pinia'
 
 const router = useRouter()
 const courseStore = useCourseStore()
 const auth = useAuthStore()
 
-const { categories, loading } = courseStore
+const { categories, loading, courses, selectedCategory } = storeToRefs(courseStore)
 
-const selectedCategory = computed(() => courseStore.selectedCategory)
 const isInstructor = computed(() => auth.user?.role === 'INSTRUCTOR')
 
 const filteredCourses = computed(() => {
-  if (!Array.isArray(courseStore.courses)) return []
-  if (selectedCategory.value === '전체') return courseStore.courses
-  return courseStore.courses.filter(c => c.category === selectedCategory.value)
+  if (!Array.isArray(courses.value)) return []
+
+  const filtered = selectedCategory.value === '전체'
+    ? courses.value
+    : courses.value.filter(c => c.category === selectedCategory.value)
+
+  return filtered.slice(0, 6)
 })
 
 function selectCategory(cat) {
@@ -280,11 +284,11 @@ onMounted(() => {
 
 .filter-chip.active {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-bg-primary);
   border-color: var(--color-primary);
 }
 
-/* 강의 그리드 */
+/* 프로그램 그리드 */
 .course-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -307,7 +311,7 @@ onMounted(() => {
 
 .skeleton-thumb {
   height: 120px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, var(--color-bg-tertiary) 25%, var(--color-border) 50%, var(--color-bg-tertiary) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
 }
@@ -322,7 +326,7 @@ onMounted(() => {
 .skeleton-line {
   height: 12px;
   border-radius: 6px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, var(--color-bg-tertiary) 25%, var(--color-border) 50%, var(--color-bg-tertiary) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
 }

@@ -75,18 +75,15 @@ export const useCourseStore = defineStore('course', () => {
       const res = await courseApi.getAll()
       console.log('[CourseStore] fetchCourses response =', res.data)
 
-      const rawCourses = Array.isArray(res.data?.data)
-        ? res.data.data
-        : Array.isArray(res.data)
-          ? res.data
-          : []
+      const payload = res.data?.data ?? res.data
+      const rawCourses = Array.isArray(payload) ? payload : []
 
       courses.value = rawCourses.map(normalizeCourse)
 
       console.log('[CourseStore] normalized courses =', courses.value)
     } catch (e) {
       console.error('[CourseStore] fetchCourses failed:', e)
-      error.value = e.message || '강의 목록을 불러오지 못했습니다.'
+      error.value = e.message || '복지 프로그램 목록을 불러오지 못했습니다.'
       courses.value = []
     } finally {
       loading.value = false
@@ -101,17 +98,18 @@ export const useCourseStore = defineStore('course', () => {
       const res = await courseApi.getById(id)
       console.log('[CourseStore] fetchCourse response =', res.data)
 
+      const payload = res.data?.data ?? res.data
       const rawCourse =
-        res.data?.data && typeof res.data.data === 'object'
-          ? res.data.data
-          : res.data
+        payload && typeof payload === 'object'
+          ? payload
+          : null
 
       selectedCourse.value = normalizeCourse(rawCourse)
 
       console.log('[CourseStore] normalized selectedCourse =', selectedCourse.value)
     } catch (e) {
       console.error('[CourseStore] fetchCourse failed:', e)
-      error.value = e.message || '강의 정보를 불러오지 못했습니다.'
+      error.value = e.message || '복지 프로그램 정보를 불러오지 못했습니다.'
       selectedCourse.value = null
     } finally {
       loading.value = false
