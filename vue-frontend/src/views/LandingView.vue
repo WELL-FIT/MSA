@@ -41,7 +41,6 @@
               <span class="badge" :class="course.badgeClass">{{ course.category }}</span>
               <h3 class="card-title">{{ course.title }}</h3>
               <div class="card-meta">
-                <span class="instructor">{{ course.instructor }}</span>
                 <span class="price">{{ course.price }}</span>
               </div>
             </div>
@@ -89,19 +88,20 @@
 <script setup>
 import AppHeader from '@/components/AppHeader.vue'
 
-import springImg   from '@/assets/images/courses/spring_boot.png'
-import vueImg      from '@/assets/images/courses/vue_js.png'
-import dockerImg   from '@/assets/images/courses/docker.png'
-import pythonImg   from '@/assets/images/courses/python.png'
-import genaiImg    from '@/assets/images/courses/generative_ai.png'
+import gymImg      from '@/assets/images/courses/gym.png'
+import petImg      from '@/assets/images/courses/pet_care.png'
+import resortImg   from '@/assets/images/courses/resort.png'
+import languageImg from '@/assets/images/courses/language.png'
+import checkupImg  from '@/assets/images/courses/family_checkup.png'
+import remoteImg   from '@/assets/images/courses/remote_work.png'
 
 const featuredCourses = [
-  { id:1, title:'종합 건강검진 패키지', category:'건강·의료',   instructor:'공급업체 #2', price:'₩180,000', thumbSrc: springImg, thumbBg:'thumb-teal',   badgeClass:'badge-teal'   },
-  { id:2, title:'심리상담 1회권',       category:'심리·마음건강', instructor:'공급업체 #2', price:'₩50,000',  thumbSrc: genaiImg,  thumbBg:'thumb-pink',   badgeClass:'badge-pink'   },
-  { id:3, title:'온라인 외국어 학습권', category:'자기계발',    instructor:'공급업체 #2', price:'₩75,000',  thumbSrc: pythonImg, thumbBg:'thumb-purple', badgeClass:'badge-purple' },
-  { id:4, title:'문화생활 관람권',      category:'문화',        instructor:'공급업체 #2', price:'₩50,000',  thumbSrc: vueImg,    thumbBg:'thumb-blue',   badgeClass:'badge-blue'   },
-  { id:5, title:'가족 건강검진 지원',   category:'가족·생활',   instructor:'공급업체 #2', price:'₩150,000', thumbSrc: vueImg,    thumbBg:'thumb-amber',  badgeClass:'badge-amber'  },
-  { id:6, title:'재택근무 장비 지원',   category:'기타',        instructor:'공급업체 #2', price:'₩200,000', thumbSrc: dockerImg, thumbBg:'thumb-gray',   badgeClass:'badge-gray'   },
+  { id:1, title:'헬스장 이용권',        category:'건강·의료',   price:'₩60,000',  thumbSrc: gymImg,      thumbBg:'thumb-teal',   badgeClass:'badge-teal'   },
+  { id:2, title:'반려동물 케어 지원',   category:'가족·생활',   price:'₩100,000', thumbSrc: petImg,      thumbBg:'thumb-amber',  badgeClass:'badge-amber'  },
+  { id:3, title:'온라인 외국어 학습권', category:'자기계발',    price:'₩75,000',  thumbSrc: languageImg, thumbBg:'thumb-purple', badgeClass:'badge-purple' },
+  { id:4, title:'휴양시설 숙박 지원',   category:'여가·휴식',   price:'₩130,000', thumbSrc: resortImg,   thumbBg:'thumb-blue',   badgeClass:'badge-blue'   },
+  { id:5, title:'가족 건강검진 지원',   category:'가족·생활',   price:'₩150,000', thumbSrc: checkupImg,  thumbBg:'thumb-amber',  badgeClass:'badge-amber'  },
+  { id:6, title:'재택근무 장비 지원',   category:'기타',        price:'₩200,000', thumbSrc: remoteImg,   thumbBg:'thumb-gray',   badgeClass:'badge-gray'   },
 ]
 
 const features = [
