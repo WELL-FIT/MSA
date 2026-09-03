@@ -1,4 +1,4 @@
--- 온라인 강의 플랫폼 초기 DDL
+-- 사내복지 프로그램 플랫폼 초기 DDL
 -- Spring JPA ddl-auto: update 로도 생성되지만
 -- 명시적 DDL로 테이블 선후 관계를 문서화
 
@@ -13,15 +13,15 @@ CREATE TABLE IF NOT EXISTS users (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 강사가 강의 개설 (instructor_id → users.id)
+-- 복지 공급업체가 복지 프로그램 개설 (instructor_id → users.id)
 CREATE TABLE IF NOT EXISTS courses (
     id               BIGINT          NOT NULL AUTO_INCREMENT,
     title            VARCHAR(255)    NOT NULL,
     description      TEXT,
-    category         VARCHAR(50)     NOT NULL COMMENT 'BACKEND|FRONTEND|DEVOPS|DATA_SCIENCE|MOBILE|SECURITY|DATABASE|OTHER',
+    category         VARCHAR(50)     NOT NULL COMMENT 'HEALTH|SELF_DEVELOPMENT|LEISURE|PSYCHOLOGICAL|FAMILY|FINANCIAL|CULTURE|OTHER',
     price            DECIMAL(10,2)   NOT NULL,
     instructor_id    BIGINT          NOT NULL,
-    enrollment_count INT             NOT NULL DEFAULT 0,
+    enrollment_count INT             NOT NULL DEFAULT 0 COMMENT '이용 임직원 수',
     status           VARCHAR(20)     NOT NULL DEFAULT 'ACTIVE' COMMENT 'ACTIVE | INACTIVE',
     created_at       DATETIME(6),
     updated_at       DATETIME(6),
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS courses (
     FOREIGN KEY (instructor_id) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 수강생이 수강 신청 (user_id → users.id, course_id → courses.id)
+-- 임직원이 복지 신청 (user_id → users.id, course_id → courses.id)
 CREATE TABLE IF NOT EXISTS enrollments (
     id          BIGINT      NOT NULL AUTO_INCREMENT,
     user_id     BIGINT      NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS enrollments (
     FOREIGN KEY (course_id) REFERENCES courses(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 수강 확정 후 결제 (user_id → users.id, course_id → courses.id)
+-- 복지 신청 승인 후 포인트 차감 (user_id → users.id, course_id → courses.id)
 CREATE TABLE IF NOT EXISTS payments (
     id              BIGINT          NOT NULL AUTO_INCREMENT,
     user_id         BIGINT          NOT NULL,

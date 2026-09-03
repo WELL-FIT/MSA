@@ -53,8 +53,8 @@
               <div class="form-group">
                 <label class="form-label">역할</label>
                 <select v-model="registerForm.role" class="form-input">
-                  <option value="STUDENT">학생</option>
-                  <option value="INSTRUCTOR">강사</option>
+                  <option value="STUDENT">임직원</option>
+                  <option value="INSTRUCTOR">관리자/공급업체</option>
                 </select>
               </div>
               <div v-if="error" class="error-msg">{{ error }}</div>
