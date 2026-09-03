@@ -173,7 +173,7 @@ function handleLogout() {
 function validateForm() {
   validationError.value = ''
 
-  if (!auth.user || auth.user.role !== 'ADMIN') {
+  if (!auth.user || auth.user.role !== 'INSTRUCTOR') {
     validationError.value = '강사 계정만 강의를 등록할 수 있습니다.'
     return false
   }

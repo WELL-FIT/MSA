@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     email       VARCHAR(255)    NOT NULL UNIQUE,
     password    VARCHAR(255)    NOT NULL,
     name        VARCHAR(100)    NOT NULL,
-    role        VARCHAR(20)     NOT NULL COMMENT 'USER | ADMIN',
+    role        VARCHAR(20)     NOT NULL COMMENT 'STUDENT | INSTRUCTOR',
     created_at  DATETIME(6),
     updated_at  DATETIME(6),
     PRIMARY KEY (id)

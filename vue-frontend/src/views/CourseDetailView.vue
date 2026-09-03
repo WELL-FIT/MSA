@@ -84,7 +84,7 @@ const enrollmentStatus = ref('NONE') // NONE | PENDING | ACTIVE
 
 const course = computed(() => courseStore.selectedCourse)
 const loading = computed(() => courseStore.loading)
-const isInstructor = computed(() => auth.user?.role === 'ADMIN')
+const isInstructor = computed(() => auth.user?.role === 'INSTRUCTOR')
 
 const categoryConfig = {
   '건강·의료': { badge: 'badge-teal', bg: 'thumb-teal', thumb: 'spring_boot' },

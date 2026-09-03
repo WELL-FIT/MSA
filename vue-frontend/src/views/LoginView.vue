@@ -53,8 +53,8 @@
               <div class="form-group">
                 <label class="form-label">역할</label>
                 <select v-model="registerForm.role" class="form-input">
-                  <option value="USER">임직원</option>
-                  <option value="ADMIN">관리자/공급업체</option>
+                  <option value="STUDENT">임직원</option>
+                  <option value="INSTRUCTOR">관리자/공급업체</option>
                 </select>
               </div>
               <div v-if="error" class="error-msg">{{ error }}</div>
@@ -88,7 +88,7 @@ const loading = ref(false)
 const error = ref('')
 const success = ref('')
 
-const registerForm = ref({ name: '', email: '', password: '', role: 'USER' })
+const registerForm = ref({ name: '', email: '', password: '', role: 'STUDENT' })
 
 const features = ['수강 중인 강의 이어보기', '맞춤 강의 추천', '수료증 관리']
 
@@ -103,7 +103,7 @@ async function handleRegister() {
   try {
     await authApi.register(registerForm.value)
     success.value = '회원가입 완료! 로그인 페이지로 이동합니다.'
-    registerForm.value = { name: '', email: '', password: '', role: 'USER' }
+    registerForm.value = { name: '', email: '', password: '', role: 'STUDENT' }
     setTimeout(() => {
       showRegister.value = false
       success.value = ''

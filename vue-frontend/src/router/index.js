@@ -70,7 +70,7 @@ router.beforeEach((to) => {
     return { name: 'CourseList' }
   }
 
-  if (to.meta.instructorOnly && auth.user?.role !== 'ADMIN') {
+  if (to.meta.instructorOnly && auth.user?.role !== 'INSTRUCTOR') {
     return { name: 'CourseList' }
   }
 })

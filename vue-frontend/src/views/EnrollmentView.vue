@@ -96,7 +96,7 @@ const auth = useAuthStore()
 const enrollments = ref([])
 const loading = ref(true)
 
-const isInstructor = computed(() => auth.user?.role === 'ADMIN')
+const isInstructor = computed(() => auth.user?.role === 'INSTRUCTOR')
 
 const categoryConfig = {
   '건강·의료': { bg: 'thumb-teal', badge: 'badge-teal', thumb: 'spring_boot' },

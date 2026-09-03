@@ -2,15 +2,18 @@
 -- 기존 테이블/필드/상태값은 유지하고, 화면 해석만 복지 도메인으로 사용함
 -- 로그인 테스트 계정 비밀번호: password
 
-INSERT IGNORE INTO users
+INSERT INTO users
     (id, email, password, name, role, created_at, updated_at)
 VALUES
-    (1, 'employee@company.example', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '김직원', 'USER', CURRENT_TIMESTAMP(6), CURRENT_TIMESTAMP(6)),
-    (2, 'welfare.vendor@company.example', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '웰니스파트너', 'ADMIN', CURRENT_TIMESTAMP(6), CURRENT_TIMESTAMP(6));
+    (1, 'employee@company.example', '$2a$10$XXzQYDP.tLiZSsPiZNHdHO5qBO7YzCqAVE/q7a20ieI/WEkEKSEIS', '김직원', 'STUDENT', CURRENT_TIMESTAMP(6), CURRENT_TIMESTAMP(6)),
+    (2, 'admin@company.example', '$2a$10$XXzQYDP.tLiZSsPiZNHdHO5qBO7YzCqAVE/q7a20ieI/WEkEKSEIS', '관리자', 'INSTRUCTOR', CURRENT_TIMESTAMP(6), CURRENT_TIMESTAMP(6))
+ON DUPLICATE KEY UPDATE
+    email = VALUES(email), password = VALUES(password), name = VALUES(name),
+    role = VALUES(role), updated_at = VALUES(updated_at);
 
--- instructor_id=2는 복지 공급업체 사용자
+-- instructor_id=2는 관리자 사용자
 -- enrollment_count는 해당 복지 프로그램을 이용한 임직원 수로 해석함
-INSERT IGNORE INTO courses
+INSERT INTO courses
     (id, title, description, category, price, instructor_id, enrollment_count, status, created_at, updated_at)
 VALUES
     (1, '종합 건강검진 패키지', '기본 검진과 선택 검사를 포함한 임직원 건강검진 프로그램입니다.', 'HEALTH', 180000.00, 2, 0, 'ACTIVE', CURRENT_TIMESTAMP(6), CURRENT_TIMESTAMP(6)),
@@ -32,4 +35,9 @@ VALUES
     (17, '경조사 지원 서비스', '임직원 경조사 발생 시 축하·위로 지원을 신청할 수 있습니다.', 'FAMILY', 100000.00, 2, 1, 'ACTIVE', CURRENT_TIMESTAMP(6), CURRENT_TIMESTAMP(6)),
     (18, '자녀 교육 상담', '자녀 학습과 진로에 대한 전문 상담을 제공하는 프로그램입니다.', 'FAMILY', 80000.00, 2, 0, 'INACTIVE', CURRENT_TIMESTAMP(6), CURRENT_TIMESTAMP(6)),
     (19, '휴양시설 숙박 지원', '제휴 휴양시설 예약에 사용할 수 있는 숙박 지원 프로그램입니다.', 'LEISURE', 130000.00, 2, 4, 'ACTIVE', CURRENT_TIMESTAMP(6), CURRENT_TIMESTAMP(6)),
-    (20, '생활법률 상담', '일상생활에서 발생하는 법률 문제를 상담할 수 있는 서비스입니다.', 'FINANCIAL', 60000.00, 2, 0, 'ACTIVE', CURRENT_TIMESTAMP(6), CURRENT_TIMESTAMP(6));
+    (20, '생활법률 상담', '일상생활에서 발생하는 법률 문제를 상담할 수 있는 서비스입니다.', 'FINANCIAL', 60000.00, 2, 0, 'ACTIVE', CURRENT_TIMESTAMP(6), CURRENT_TIMESTAMP(6))
+ON DUPLICATE KEY UPDATE
+    title = VALUES(title), description = VALUES(description), category = VALUES(category),
+    price = VALUES(price), instructor_id = VALUES(instructor_id),
+    enrollment_count = VALUES(enrollment_count), status = VALUES(status),
+    updated_at = VALUES(updated_at);

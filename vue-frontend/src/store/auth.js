@@ -9,7 +9,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref(JSON.parse(sessionStorage.getItem('user') || 'null'))
 
   const isAuthenticated = computed(() => !!accessToken.value)
-  const isInstructor = computed(() => user.value?.role === 'ADMIN')
+  const isInstructor = computed(() => user.value?.role === 'INSTRUCTOR')
 
   function setToken(token) {
     accessToken.value = token
