@@ -7,7 +7,7 @@
           <div class="sidebar-label">메뉴</div>
 
           <router-link to="/courses" class="sidebar-item">
-            <span class="si-icon">📚</span> 강의 목록
+            <span class="si-icon">📚</span> 복지 목록
           </router-link>
 
           <router-link
@@ -75,8 +75,14 @@
           </p>
         </section>
 
-        <!-- 강사 화면 -->
+        <!-- 강사(관리자) 화면 -->
         <section v-else class="instructor-section">
+          <BudgetDashboard
+            class="budget-dashboard-block"
+            :courses="allCourses"
+            :loading="instructorLoading"
+          />
+
           <div class="section-head">
             <h3 class="section-title">내가 등록한 강좌</h3>
             <span class="section-subtitle">등록한 강좌와 강좌별 수강생 수를 확인할 수 있습니다.</span>
@@ -169,6 +175,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
 import CourseCard from '@/components/CourseCard.vue'
+import BudgetDashboard from '@/components/BudgetDashboard.vue'
 import { useAuthStore } from '@/store/auth.js'
 import { enrollmentApi } from '@/api/enrollment.js'
 import { courseApi } from '@/api/course.js'
@@ -186,6 +193,7 @@ const recommendMessage = ref('')
 
 /* 강사용 */
 const myCourses = ref([])
+const allCourses = ref([])
 const instructorLoading = ref(true)
 const instructorError = ref('')
 
@@ -304,6 +312,8 @@ async function loadInstructorCourses() {
         rawCourse: course
       })
     })
+
+    allCourses.value = courses
 
     const instructorId = Number(auth.user.id)
 
@@ -540,6 +550,10 @@ onMounted(async () => {
 
 .skeleton-line.short {
   width: 40%;
+}
+
+.budget-dashboard-block {
+  margin-bottom: 32px;
 }
 
 .summary-cards {
