@@ -11,7 +11,6 @@
       <span class="badge" :class="badgeClass">{{ course.category }}</span>
       <h3 class="card-title">{{ course.title }}</h3>
       <div class="card-meta">
-        <span class="instructor">{{ providerName }}</span>
         <span class="price">₩{{ Number(course.price).toLocaleString() }}</span>
       </div>
       <div class="card-footer">
@@ -42,12 +41,6 @@ const categoryConfig = {
 const config = computed(() => categoryConfig[props.course.category] || { bg: 'thumb-gray', badge: 'badge-gray' })
 const thumbBg = computed(() => config.value.bg)
 const badgeClass = computed(() => config.value.badge)
-const providerName = computed(() => (
-  props.course.instructorName ||
-  props.course.teacherName ||
-  props.course.instructor_name ||
-  (props.course.instructorId ? `공급업체 #${props.course.instructorId}` : '공급업체 정보 없음')
-))
 const displayEnrollmentCount = computed(() => {
   const value = Number(props.course.enrollmentCount ?? props.course.enrollment_count ?? 0)
   return Number.isNaN(value) ? '0' : value.toLocaleString()
@@ -122,10 +115,6 @@ const thumbSrc = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-.instructor {
-  font-size: 12px;
-  color: var(--color-text-secondary);
 }
 .price {
   font-size: 14px;

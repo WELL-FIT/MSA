@@ -25,9 +25,6 @@
 
         <div class="sidebar-section">
           <div class="sidebar-label">계정</div>
-          <router-link to="/mypage" class="sidebar-item">
-            <span class="si-icon">👤</span> 마이페이지
-          </router-link>
           <button class="sidebar-item sidebar-btn" @click="handleLogout">
             <span class="si-icon">🚪</span> 로그아웃
           </button>
