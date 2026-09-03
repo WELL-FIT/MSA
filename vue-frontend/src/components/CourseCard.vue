@@ -28,14 +28,14 @@ const props = defineProps({
 })
 
 const categoryConfig = {
-  '건강·의료': { bg: 'thumb-teal', badge: 'badge-teal', thumb: 'spring_boot' },
-  '자기계발': { bg: 'thumb-purple', badge: 'badge-purple', thumb: 'python' },
-  '여가·휴식': { bg: 'thumb-blue', badge: 'badge-blue', thumb: 'vue_js' },
-  '심리·마음건강': { bg: 'thumb-pink', badge: 'badge-pink', thumb: 'generative_ai' },
-  '가족·생활': { bg: 'thumb-amber', badge: 'badge-amber', thumb: 'vue_js' },
-  '재정·상담': { bg: 'thumb-purple', badge: 'badge-purple', thumb: 'python' },
-  '문화': { bg: 'thumb-blue', badge: 'badge-blue', thumb: 'vue_js' },
-  '기타': { bg: 'thumb-gray', badge: 'badge-gray', thumb: 'docker' },
+  '건강·의료': { bg: 'thumb-teal', badge: 'badge-teal', thumb: 'gym' },
+  '자기계발': { bg: 'thumb-purple', badge: 'badge-purple', thumb: 'language' },
+  '여가·휴식': { bg: 'thumb-blue', badge: 'badge-blue', thumb: 'resort' },
+  '심리·마음건강': { bg: 'thumb-pink', badge: 'badge-pink', thumb: 'family_checkup' },
+  '가족·생활': { bg: 'thumb-amber', badge: 'badge-amber', thumb: 'pet_care' },
+  '재정·상담': { bg: 'thumb-purple', badge: 'badge-purple', thumb: 'financial' },
+  '문화': { bg: 'thumb-blue', badge: 'badge-blue', thumb: 'culture' },
+  '기타': { bg: 'thumb-gray', badge: 'badge-gray', thumb: 'remote_work' },
 }
 
 const config = computed(() => categoryConfig[props.course.category] || { bg: 'thumb-gray', badge: 'badge-gray' })
