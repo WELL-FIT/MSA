@@ -83,6 +83,49 @@
             :loading="instructorLoading"
           />
 
+          <!-- AI 저이용 프로그램 진단 -->
+          <section class="insight-section">
+            <div class="section-head">
+              <h3 class="section-title">AI 저이용 프로그램 진단</h3>
+              <span class="section-subtitle">
+                신청이 저조한 복지 프로그램을 진단하고 다음 액션을 제안받습니다.
+              </span>
+            </div>
+
+            <button
+              class="action-btn action-primary insight-run-btn"
+              :disabled="insightLoading || !allCourses.length"
+              @click="runAiInsight"
+            >
+              {{ insightLoading ? '진단 중...' : 'AI 진단 실행' }}
+            </button>
+
+            <p v-if="insightError" class="empty-text insight-error">{{ insightError }}</p>
+
+            <div v-if="insightSuggestions.length" class="insight-grid fade-in">
+              <div v-for="s in insightSuggestions" :key="s.programId" class="insight-card">
+                <div class="insight-card-top">
+                  <h4 class="course-title">{{ s.course.title }}</h4>
+                  <span class="priority-badge" :class="`priority-${s.priority.toLowerCase()}`">
+                    {{ s.priority }}
+                  </span>
+                </div>
+                <p class="insight-meta">
+                  {{ s.course.category }} · {{ formatPrice(s.course.price) }} ·
+                  신청 {{ s.course.enrollment_count ?? s.course.enrollmentCount ?? 0 }}건
+                </p>
+                <p class="insight-diagnosis">{{ s.diagnosis }}</p>
+                <ul class="insight-actions">
+                  <li v-for="(action, idx) in s.nextActions" :key="idx">{{ action }}</li>
+                </ul>
+              </div>
+            </div>
+
+            <p v-else-if="!insightLoading && insightRequested" class="empty-text">
+              저이용으로 진단된 프로그램이 없습니다.
+            </p>
+          </section>
+
           <div class="section-head">
             <h3 class="section-title">내가 등록한 강좌</h3>
             <span class="section-subtitle">등록한 강좌와 강좌별 수강생 수를 확인할 수 있습니다.</span>
@@ -173,6 +216,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import OpenAI from 'openai'
+import { zodResponseFormat } from 'openai/helpers/zod'
+import { z } from 'zod'
 import AppHeader from '@/components/AppHeader.vue'
 import CourseCard from '@/components/CourseCard.vue'
 import BudgetDashboard from '@/components/BudgetDashboard.vue'
@@ -204,6 +250,22 @@ const totalEnrollmentCount = computed(() =>
   }, 0)
 )
 
+/* AI 저이용 프로그램 진단 */
+const insightLoading = ref(false)
+const insightError = ref('')
+const insightRequested = ref(false)
+const insightSuggestions = ref([])
+
+const SuggestionSchema = z.object({
+  programId: z.number(),
+  diagnosis: z.string(),
+  nextActions: z.array(z.string()).max(3),
+  priority: z.enum(['HIGH', 'MEDIUM', 'LOW'])
+})
+const InsightResponseSchema = z.object({
+  suggestions: z.array(SuggestionSchema)
+})
+
 function handleLogout() {
   auth.logout()
   router.push('/')
@@ -227,6 +289,105 @@ function getCourseInstructorId(course) {
     course.teacher_id ??
     null
   )
+}
+
+/**
+ * courses 원본을 AI에 보낼 집계 요약으로 변환.
+ * 합계·정렬 등 숫자 계산은 전부 여기서 처리하고, 모델에는 계산 결과만 전달한다.
+ */
+function buildInsightSummary(courses) {
+  const withCount = courses.map((course) => ({
+    id: course.id,
+    title: course.title,
+    description: course.description,
+    category: course.category || 'UNKNOWN',
+    price: Number(course.price ?? 0),
+    status: course.status || 'UNKNOWN',
+    count: Number(course.enrollment_count ?? course.enrollmentCount ?? 0)
+  }))
+
+  const byCategory = {}
+  withCount.forEach((course) => {
+    if (!byCategory[course.category]) {
+      byCategory[course.category] = { programs: 0, enrollments: 0 }
+    }
+    byCategory[course.category].programs += 1
+    byCategory[course.category].enrollments += Number.isNaN(course.count) ? 0 : course.count
+  })
+
+  const lowUsage = withCount
+    .filter((course) => course.count === 0)
+    .slice(0, 10)
+    .map(({ id, title, category, price, status }) => ({ id, title, category, price, status, count: 0 }))
+
+  const topUsage = [...withCount]
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 3)
+    .map(({ id, title, category, count }) => ({ id, title, category, count }))
+
+  const totalEnrollments = withCount.reduce((sum, course) => sum + (Number.isNaN(course.count) ? 0 : course.count), 0)
+
+  return {
+    summary: {
+      totalPrograms: withCount.length,
+      activePrograms: withCount.filter((course) => course.status === 'ACTIVE').length,
+      totalEnrollments,
+      zeroUsageCount: lowUsage.length
+    },
+    byCategory,
+    lowUsage,
+    topUsage
+  }
+}
+
+async function runAiInsight() {
+  insightLoading.value = true
+  insightError.value = ''
+  insightRequested.value = true
+
+  try {
+    const payload = buildInsightSummary(allCourses.value)
+
+    // 실제 API 키는 브라우저에 노출되지 않고, vite dev 서버 프록시(/ai)가 서버 측에서 주입한다.
+    const client = new OpenAI({
+      apiKey: 'proxied',
+      // 상대경로만 넘기면 SDK 내부 new URL() 호출에서 "Invalid URL"이 발생하므로
+      // 현재 origin을 붙여 절대경로로 만든다 (요청 자체는 여전히 동일 출처 → vite 프록시가 가로챔)
+      baseURL: `${window.location.origin}/ai/v1`,
+      dangerouslyAllowBrowser: true
+    })
+
+    const res = await client.beta.chat.completions.parse({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content:
+            '사내 복지 담당자를 돕는 분석가다. 제공된 수치만 근거로 삼고 없는 데이터를 추정하지 않는다. ' +
+            'enrollmentCount(신청 수)는 누적 신청 횟수이며 취소 기능이 없어 감소하지 않는다. ' +
+            '"현재 이용자 수"로 해석하지 말 것.'
+        },
+        { role: 'user', content: JSON.stringify(payload) }
+      ],
+      response_format: zodResponseFormat(InsightResponseSchema, 'insight_response')
+    })
+
+    const parsed = res.choices?.[0]?.message?.parsed
+    if (!parsed) {
+      throw new Error('AI 응답을 해석하지 못했습니다.')
+    }
+
+    const byId = new Map(allCourses.value.map((course) => [course.id, course]))
+
+    insightSuggestions.value = parsed.suggestions
+      .map((s) => ({ ...s, course: byId.get(s.programId) }))
+      .filter((s) => s.course) // 모델이 만들어낸 존재하지 않는 programId 방어
+  } catch (error) {
+    console.error('[MyPage] AI 진단 실패:', error)
+    insightError.value = 'AI 진단에 실패했습니다. 잠시 후 다시 시도해 주세요.'
+  } finally {
+    insightLoading.value = false
+  }
 }
 
 async function loadStudentRecommendations() {
@@ -581,6 +742,93 @@ onMounted(async () => {
   font-size: 28px;
   font-weight: 700;
   color: var(--color-text-primary);
+}
+
+.insight-section {
+  margin-bottom: 32px;
+}
+
+.insight-run-btn {
+  margin-bottom: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.insight-run-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.insight-error {
+  color: #dc2626;
+}
+
+.insight-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.insight-card {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.insight-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.priority-badge {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.priority-high {
+  background: #fdeceb;
+  color: #dc2626;
+}
+
+.priority-medium {
+  background: #f7edd8;
+  color: #9a6700;
+}
+
+.priority-low {
+  background: #eaf8ef;
+  color: #0f8a3b;
+}
+
+.insight-meta {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: 10px;
+}
+
+.insight-diagnosis {
+  font-size: 14px;
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.insight-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
 }
 
 .instructor-course-list {
